@@ -1,0 +1,44 @@
+# 💼 Business Optimization Model: Maximize Profit
+# Products: Resin Crafts & Silk Thread Earrings
+
+from pulp import LpMaximize, LpProblem, LpVariable, value
+
+# Step 1: Define the model
+model = LpProblem("Maximize_Profit", LpMaximize)
+
+# Step 2: Decision Variables
+resin = LpVariable("Resin_Crafts", lowBound=0, cat='Integer')
+earrings = LpVariable("Silk_Thread_Earrings", lowBound=0, cat='Integer')
+
+# Step 3: Parameters (modify these as per your business)
+resin_profit = 150     # INR per resin item
+earrings_profit = 120  # INR per pair of earrings
+
+resin_material = 50    # grams per item
+earrings_material = 30 # grams per item
+total_material = 1000  # total grams available
+
+resin_time = 60        # minutes per item
+earrings_time = 45     # minutes per item
+total_time = 480       # total minutes available
+
+resin_cost = 80        # INR per item
+earrings_cost = 40     # INR per item
+total_budget = 3000    # total budget in INR
+
+# Step 4: Objective Function
+model += (resin_profit * resin + earrings_profit * earrings), "Total_Profit"
+
+# Step 5: Constraints
+model += (resin_material * resin + earrings_material * earrings <= total_material), "Material_Constraint"
+model += (resin_time * resin + earrings_time * earrings <= total_time), "Time_Constraint"
+model += (resin_cost * resin + earrings_cost * earrings <= total_budget), "Budget_Constraint"
+
+# Step 6: Solve the model
+model.solve()
+
+# Step 7: Output Results
+print("🛠️ Optimal Production Plan:")
+print(f"Produce {resin.varValue} Resin Crafts")
+print(f"Produce {earrings.varValue} Silk Thread Earrings")
+print(f"💰 Maximum Profit: ₹{value(model.objective)}")
