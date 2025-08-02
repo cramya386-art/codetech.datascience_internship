@@ -1,0 +1,50 @@
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.impute import SimpleImputer
+from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+import joblib
+
+# Step 1: Load Data
+df = pd.read_csv("Dataset.csv")  # Replace with actual path
+print("📦 Data shape:", df.shape)
+
+# Step 2: Identify Features and Target
+target = 'target_column'  # Change to your actual target column
+X = df.drop(columns=[target])
+y = df[target]
+
+# Step 3: Separate Column Types
+numeric_features = X.select_dtypes(include=['int64', 'float64']).columns
+categorical_features = X.select_dtypes(include=['object']).columns
+
+# Step 4: Build Preprocessing Pipelines
+numeric_pipeline = Pipeline([
+    ('imputer', SimpleImputer(strategy='median')),
+    ('scaler', StandardScaler())
+])
+
+categorical_pipeline = Pipeline([
+    ('imputer', SimpleImputer(strategy='most_frequent')),
+    ('encoder', OneHotEncoder(handle_unknown='ignore', sparse=False))
+])
+
+preprocessor = ColumnTransformer([
+    ('num', numeric_pipeline, numeric_features),
+    ('cat', categorical_pipeline, categorical_features)
+])
+
+# Step 5: Transform Data
+X_processed = preprocessor.fit_transform(X)
+
+# Step 6: Split Data
+X_train, X_test, y_train, y_test = train_test_split(X_processed, y, test_size=0.2, random_state=42)
+
+# Step 7: Save Processed Data and Pipeline
+pd.DataFrame(X_train).to_csv("X_train_processed.csv", index=False)
+pd.DataFrame(X_test).to_csv("X_test_processed.csv", index=False)
+joblib.dump(preprocessor, "etl_pipeline.pkl")
+
+print("✅ ETL complete! Preprocessed data and pipeline saved.")
